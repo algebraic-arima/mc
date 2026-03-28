@@ -26,6 +26,9 @@ void TS::print() const {
 TS::TS(std::istream &is) {
   std::size_t s, t;
   is >> s >> t;
+  if (s > BitSet::MAX_SIZE) {
+    throw std::runtime_error("Too many states in TS: " + std::to_string(s));
+  }
   states.resize(s);
   for (std::size_t i = 0; i < s; ++i) {
     states[i].id = i;

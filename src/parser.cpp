@@ -42,6 +42,10 @@ Parser::ASTNodePtr Parser::alloc_node(Parser::ASTNodePtr node) {
     return nullptr;
   node->id = node_pool_.size();
   node_pool_.push_back(node);
+  if (node->type == ASTNodeType::Next || node->type == ASTNodeType::Until ||
+      node->type == ASTNodeType::Prop) {
+    enumerated.push_back(node);
+  }
   return node;
 }
 
@@ -92,13 +96,13 @@ Parser::ASTNodePtr Parser::parse_prefix(Token token) {
     auto right = parse_expression(get_binding_power(token.type));
     auto neg_right = alloc_node(new UnaryNode(ASTNodeType::Not, right));
     auto until_node = alloc_node(new BinaryNode(
-        ASTNodeType::Until, alloc_node(new TrueNode()), neg_right));
+        ASTNodeType::Until, AP_[prop_map_["true"]], neg_right));
     return alloc_node(new UnaryNode(ASTNodeType::Not, until_node));
   }
   case TokenType::Eventually: {
     auto right = parse_expression(get_binding_power(token.type));
     return alloc_node(
-        new BinaryNode(ASTNodeType::Until, alloc_node(new TrueNode()), right));
+        new BinaryNode(ASTNodeType::Until, AP_[prop_map_["true"]], right));
   }
   case TokenType::Identifier: {
     if (prop_map_.find(token.lexeme) != prop_map_.end()) {

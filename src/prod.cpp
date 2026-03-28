@@ -103,7 +103,7 @@ bool Prod::persistence_check() {
       }
     }
   }
-#ifdef DEBUG
+#ifdef CYCLE
   if (cycle_found) {
     std::cout << "Cycle: \nU\n";
     for (auto i : U) {

@@ -29,6 +29,7 @@ public:
   std::vector<ASTNodePtr> node_pool_; // all ASTNodes
   std::vector<PropNode *> AP_;        // all atomic propositions
   std::map<std::string, size_t> prop_map_;
+  std::vector<ASTNodePtr> enumerated;
   explicit Parser(Lexer &lexer, TS &ts) : lexer_(lexer) {
     for (size_t i = 0; i < ts.prop.size(); ++i) {
       prop_map_[ts.prop[i]] = i;

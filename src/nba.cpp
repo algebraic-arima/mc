@@ -167,23 +167,118 @@ bool NBA::is_elementary(const FormulaSet &formulas) const {
 }
 
 void NBA::construct_states() {
-  int n = subformulas.size();
+  int n = parser.enumerated.size();
+#ifdef DEBUG
+  for (auto &s : parser.enumerated) {
+    std::cout << s->id << std::endl;
+  }
+#endif
+  FormulaSet formulas;
+  FormulaSet e;
   for (unsigned long mask = 0; mask < (1UL << n); ++mask) {
-    FormulaSet formulas = mask_to_formulaset(mask, n);
-    if (is_elementary(formulas)) {
-      add_state(formulas, formulas.test(rt->id));
+    auto ans = compute(formulas);
+    if (!ans.back()) {
+      add_state(ans, ans.test(parser.ltlrt_->id));
+    }
+    for (size_t i = 0; i < n; ++i) {
+      if (e.test(i)) {
+        e.bits.reset(i);
+        formulas.bits.reset(parser.enumerated[i]->id);
+      } else {
+        e.bits.set(i);
+        formulas.bits.set(parser.enumerated[i]->id);
+        break;
+      }
     }
   }
 }
 
-NBA::FormulaSet NBA::mask_to_formulaset(unsigned long mask, int n) const {
-  FormulaSet formulas;
-  for (int i = 0; i < n; ++i) {
-    if (mask & (1UL << i)) {
-      formulas.set(i);
+NBA::FormulaSet NBA::compute(const NBA::FormulaSet &prop) {
+  FormulaSet visited;
+  FormulaSet ans = prop;
+  std::vector<FormulaID> S;
+  S.push_back(parser.ltlrt_->id);
+  do {
+    FormulaID ss = S.back();
+    switch (parser.node_pool_[ss]->type) {
+    case ASTNodeType::Prop: {
+      S.pop_back();
+      break;
     }
-  }
-  return formulas;
+    case ASTNodeType::True: {
+      S.pop_back();
+      ans.bits.set(ss);
+      break;
+    }
+    case ASTNodeType::Not: {
+      UnaryNode *not_ptr = static_cast<UnaryNode *>(parser.node_pool_[ss]);
+      FormulaID child_id = not_ptr->child->id;
+      if (!visited.test(child_id)) {
+        S.push_back(child_id);
+        visited.bits.set(child_id);
+      } else {
+        S.pop_back();
+        visited.bits.set(ss);
+        ans.bits.set(ss, !ans.test(child_id));
+      }
+      break;
+    }
+    case ASTNodeType::And: {
+      BinaryNode *and_ptr = static_cast<BinaryNode *>(parser.node_pool_[ss]);
+      FormulaID left_id = and_ptr->left->id;
+      FormulaID right_id = and_ptr->right->id;
+      if (!visited.test(left_id)) {
+        S.push_back(left_id);
+        visited.bits.set(left_id);
+      } else if (!visited.test(right_id)) {
+        S.push_back(right_id);
+        visited.bits.set(right_id);
+      } else {
+        S.pop_back();
+        visited.bits.set(ss);
+        ans.bits.set(ss, ans.test(left_id) && ans.test(right_id));
+      }
+      break;
+    }
+    case ASTNodeType::Until: {
+      BinaryNode *until_ptr = static_cast<BinaryNode *>(parser.node_pool_[ss]);
+      FormulaID left_id = until_ptr->left->id;
+      FormulaID right_id = until_ptr->right->id;
+      if (!visited.test(left_id)) {
+        S.push_back(left_id);
+        visited.set(left_id);
+      } else if (!visited.test(right_id)) {
+        S.push_back(right_id);
+        visited.set(right_id);
+      } else {
+        S.pop_back();
+        bool left_val = ans.test(left_id);
+        bool right_val = ans.test(right_id);
+        bool val = prop.test(ss);
+        if (right_val && !val) {
+          ans.bits.set();
+          return ans; // fails
+        } else if (val && !right_val && !left_val) {
+          ans.bits.set();
+          return ans; // fails
+        }
+      }
+      break;
+    }
+    case ASTNodeType::Next: {
+      UnaryNode *next_ptr = static_cast<UnaryNode *>(parser.node_pool_[ss]);
+      FormulaID child_id = next_ptr->child->id;
+      if (!visited.test(child_id)) {
+        S.push_back(child_id);
+        visited.bits.set(child_id);
+      } else {
+        S.pop_back();
+      }
+      break;
+    }
+    }
+  } while (!S.empty());
+  return ans;
 }
 
 void NBA::duplicate_states() {

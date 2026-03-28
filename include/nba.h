@@ -16,6 +16,7 @@ public:
   using ASTNodePtr = ASTNode *;
   using APRef = std::vector<PropNode *>;
   using APSet = BitSet;
+  using FormulaID = size_t;
   using FormulaRef = std::vector<ASTNode *>;
   using FormulaSet = BitSet;
 
@@ -47,6 +48,9 @@ public:
     construct_accepting_sets();
     construct_transitions();
     duplicate_states();
+    if (states.size() > BitSet::MAX_SIZE) {
+      throw std::runtime_error("Too many states in NBA: " + std::to_string(states.size()));
+    }
 #ifdef DEBUG
     print();
 #endif
@@ -56,6 +60,7 @@ public:
   void construct_accepting_sets();
   void duplicate_states();
   void construct_transitions();
+  FormulaSet compute(const FormulaSet& prop);
 
   void print() const;
 
@@ -63,7 +68,6 @@ public:
 
 private:
   bool exists_state(StateID id);
-  FormulaSet mask_to_formulaset(unsigned long mask, int n) const;
   bool is_elementary(const FormulaSet &formulas) const;
   StateID add_state(const FormulaSet &formulas, bool is_initial = false);
   void add_transition(StateID from, const APSet &label, StateID to);

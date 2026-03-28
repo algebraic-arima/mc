@@ -23,6 +23,11 @@ public:
     ts_states = ts.states.size();
     construct_accepting_states();
     construct_initial_states(init);
+
+    if (nba_states * ts_states > BitSet::MAX_SIZE) {
+      throw std::runtime_error("Too many states in NBA: " +
+                               std::to_string(nba_states * ts_states));
+    }
 #ifdef DEBUG
     print();
 #endif

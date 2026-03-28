@@ -5,11 +5,24 @@
 
 class BitSet {
 public:
-  std::bitset<500> bits;
+  static const size_t MAX_SIZE = 1024;
+  std::bitset<MAX_SIZE> bits;
 
   BitSet() = default;
 
-  explicit BitSet(const std::bitset<500> &b) : bits(b) {}
+  explicit BitSet(const std::bitset<MAX_SIZE> &b) : bits(b) {}
+
+  BitSet &operator++() {
+    for (size_t i = 0; i < bits.size(); ++i) {
+      if (!bits.test(i)) {
+        bits.set(i);
+        break;
+      } else {
+        bits.reset(i);
+      }
+    }
+    return *this;
+  }
 
   bool operator<(const BitSet &other) const {
     return bits.to_ullong() < other.bits.to_ullong();
@@ -34,6 +47,15 @@ public:
   bool test(size_t pos) const { return bits.test(pos); }
 
   void set(size_t pos, bool value = true) { bits.set(pos, value); }
+
+  void reset(size_t pos) { bits.reset(pos); }
+
+  bool back() const { return bits[bits.size() - 1]; }
+
+  friend std::ostream &operator<<(std::ostream &os, const BitSet &bs) {
+    os << bs.bits;
+    return os;
+  }
 };
 
 #endif // __BITSET_H__

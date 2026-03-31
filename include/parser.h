@@ -28,18 +28,19 @@ public:
   ASTNodePtr ltlrt_;
   std::vector<ASTNodePtr> node_pool_; // all ASTNodes
   std::vector<PropNode *> AP_;        // all atomic propositions
-  std::map<std::string, size_t> prop_map_;
-  std::vector<ASTNodePtr> enumerated;
+  std::map<std::string, size_t> prop_map_; // from proposition name to index in AP_
+  std::vector<ASTNodePtr> enumerated; // nodes that need to be enumerated for state construction
   explicit Parser(Lexer &lexer, TS &ts) : lexer_(lexer) {
     for (size_t i = 0; i < ts.prop.size(); ++i) {
-      prop_map_[ts.prop[i]] = i;
+      prop_map_[ts.prop[i]] = i; 
+      // we know all the propositions in the TS; those not appearing are considered false
       auto ptr = new PropNode(ts.prop[i]);
       AP_.push_back(ptr);
       alloc_node(ptr);
     }
     prop_map_["true"] = ts.prop.size(); // for true node
     auto ptr = new TrueNode();
-    AP_.push_back(ptr);
+    AP_.push_back(ptr); // after the construction, we will pop the true node
     alloc_node(ptr);
   };
   void parse();

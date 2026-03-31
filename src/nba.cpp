@@ -314,6 +314,7 @@ void NBA::construct_transitions() {
       if (state.formulas.test(i)) {
         ASTNode *node = subformulas[i];
         if (node->type == ASTNodeType::Next) {
+          // X1\in B -> 1\in B'
           UnaryNode *next_node = static_cast<UnaryNode *>(node);
           int child_id = next_node->child->id;
           expected_next_contains.set(child_id);
@@ -335,6 +336,7 @@ void NBA::construct_transitions() {
       if (!state.formulas.test(i)) {
         ASTNode *node = subformulas[i];
         if (node->type == ASTNodeType::Next) {
+          // X1\notin B -> 1\notin B'
           UnaryNode *next_node = static_cast<UnaryNode *>(node);
           int child_id = next_node->child->id;
           expected_next_excludes.set(child_id);
@@ -357,6 +359,8 @@ void NBA::construct_transitions() {
               expected_next_contains &&
           (target.formulas & expected_next_excludes).bits.none()) {
         add_transition(state.id, transition, target.id);
+        // the parameters are the ids in GNBA
+        // but the function adds transition to NBA
       }
     }
   }

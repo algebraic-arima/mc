@@ -64,6 +64,7 @@ void Prod::print() const {
   std::cout << "}" << std::endl;
 }
 
+// the transition function of the product TS
 Prod::StateSet Prod::step(const StateID &prod) {
   StateSet successors;
   for (const auto &ts_s : ts.get_successors(get_ts_id(ts, prod))) {
@@ -92,6 +93,8 @@ Prod::StateSet Prod::step(const StateID &prod) {
   return successors;
 }
 
+
+// below are textbook algorithms of nestedDFS
 bool Prod::persistence_check() {
   auto I = initial_states;
   while (!cycle_found && ((I & R) != I)) {

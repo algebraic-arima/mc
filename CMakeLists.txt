@@ -16,4 +16,4 @@ add_executable(ltlmc
     src/prod.cpp
 )
 
-target_include_directories(ltlmc include)
+target_include_directories(ltlmc PRIVATE include)

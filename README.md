@@ -102,6 +102,8 @@ The lexer tokenizes the input formula string into a stream of tokens. The parser
 
 The parser also performs desugaring of operators into a smaller set of core AST nodes, i.e. `And`, `Not`, `Next`, `Until`, `True`, and `Prop`. This simplifies the subsequent NBA construction.
 
+The resulting AST is not a tree but a DAG, something like a boolean circuit. This allows for sharing of common subformulas.
+
 ## From LTL formula to NBA
 
 The implementation is modified from the textbook algorithms. The main idea is to construct the NBA directly from the AST, without first constructing a GNBA and then converting it to an NBA.

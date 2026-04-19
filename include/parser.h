@@ -22,6 +22,8 @@ class Parser {
 
   ASTNodePtr copy(ASTNodePtr node);
 
+  std::map<size_t, int> node_map_; // from hash to node index
+
   inline int get_binding_power(TokenType type);
 
 public:

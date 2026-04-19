@@ -5,7 +5,7 @@
 
 class BitSet {
 public:
-  static const size_t MAX_SIZE = 1024;
+  static const size_t MAX_SIZE = 65536;
   std::bitset<MAX_SIZE> bits;
 
   BitSet() = default;

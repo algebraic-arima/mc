@@ -40,12 +40,16 @@ void Parser::parse() {
 Parser::ASTNodePtr Parser::alloc_node(Parser::ASTNodePtr node) {
   if (!node)
     return nullptr;
+  if (node_map_.find(node->hash) != node_map_.end()) {
+    return node_pool_[node_map_[node->hash]];
+  }
   node->id = node_pool_.size();
   node_pool_.push_back(node);
   if (node->type == ASTNodeType::Next || node->type == ASTNodeType::Until ||
       node->type == ASTNodeType::Prop) {
     enumerated.push_back(node);
   }
+  node_map_[node->hash] = node->id;
   return node;
 }
 
